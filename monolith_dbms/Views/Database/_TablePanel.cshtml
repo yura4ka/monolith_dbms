@@ -21,7 +21,7 @@
 }
 
 <div class="hstack gap-3 mb-3">
-    <button class="btn btn-success flex-shrink-0">Add Row</button>
+    <a href="@Url.Action("CreateRow", new { id = Model.Id, tableName = table.Name })" class="btn btn-success flex-shrink-0">Add Row</a>
     <button 
         type="button" 
         class="btn btn-danger" 

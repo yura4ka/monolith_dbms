@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using monolith_dbms.Models;
 using monolith_dbms.Models.ViewModels;
 using monolith_dbms.Services;
 
@@ -76,6 +77,75 @@ namespace monolith_dbms.Controllers
             };
 
             return View("Index", model);
+        }
+
+        [HttpGet]
+		[Route("Database/{id}/CreateRow/{tableName}")]
+		public IActionResult CreateRow(string id, string tableName)
+        {
+            var database = _connectionManager.GetConnectionById(id);
+            if (database == null) return NotFound();
+
+            var selectedTable = database.Tables.Find(t => t.Name == tableName);
+            if (selectedTable == null) return NotFound();
+
+            var values = new Dictionary<string, string>();
+			var columnNames = new Dictionary<string, string>();
+			foreach (var col in selectedTable.Columns)
+            {
+                values.Add(col.Name, col.DefaultValue?.ToString() ?? "");
+				string columnName = $"{col.Name} ({col.TypeName})";
+				if (col.IsPk) columnName += " (pk)";
+				if (col.IsNotNull) columnName += " (nn)";
+                columnNames.Add(col.Name, columnName);
+			}
+
+            return View(new EditRowModel { Values = values, ColumnNames = columnNames });
+        }
+
+        [HttpPost]
+		[Route("Database/{id}/CreateRow/{tableName}")]
+		public IActionResult CreateRow(string id, string tableName, EditRowModel editRow)
+        {
+			var database = _connectionManager.GetConnectionById(id);
+			if (database == null) return NotFound();
+
+			var selectedTable = database.Tables.Find(t => t.Name == tableName);
+			if (selectedTable == null) return NotFound();
+
+			var columnValues = new ColumnValue[selectedTable.Columns.Count];
+            foreach (var item in editRow.Values)
+            {
+                int index = selectedTable.Columns.FindIndex(c => c.Name == item.Key);
+                if (index == -1)
+                {
+					ModelState.AddModelError($"Values[{item.Key}]", $"Error! {item.Key} column doesn't exists");
+                    break;
+				}
+
+				var c = selectedTable.Columns[index];
+				columnValues[index] = c.Type.Instance(null, !c.IsNotNull);
+				bool isValid = columnValues[index].ParseString(item.Value);
+                if (!isValid) ModelState.AddModelError($"Values[{item.Key}]", $"Wrong value!");
+            }
+
+            if (!ModelState.IsValid)
+            {
+				return View(editRow);
+			}
+
+			try
+			{
+				bool isValid = selectedTable.AddRow(new Row(columnValues));
+                if (!isValid) ModelState.AddModelError("", "Error!");
+			}
+			catch (Exception ex)
+			{
+				ModelState.AddModelError("", ex.Message);
+			}
+
+            if (!ModelState.IsValid) return View(editRow);
+            return RedirectToAction("Table", new { id, tableName });
         }
 
         [HttpPost]
