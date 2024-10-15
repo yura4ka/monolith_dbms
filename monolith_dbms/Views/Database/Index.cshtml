@@ -1,0 +1,21 @@
+﻿@model DatabaseViewModel
+
+<div class="row">
+    <div class="col-md-2">
+        @await Html.PartialAsync("_TreeView", Model)
+    </div>
+    <div class="col-md-10">
+        @if (Model.SelectedColumn != null)
+        {
+            @await Html.PartialAsync("_ColumnPanel", Model)
+        }
+        else if (Model.SelectedTable != null)
+        {
+            @await Html.PartialAsync("_TablePanel", Model)
+        }
+        else
+        {
+            <div></div>
+        }
+    </div>
+</div>
