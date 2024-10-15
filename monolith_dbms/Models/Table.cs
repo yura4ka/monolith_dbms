@@ -75,7 +75,7 @@ namespace monolith_dbms.Models
 			_rows = rows.Where(r => r.Any(value => searchFunc(value.StringValue))).ToList();
         }
 
-		public bool ChangeCell(int row, int column, string value)
+		public bool ChangeCell(int row, int column, string value, bool onlyCheck = false)
 		{
 			bool isValid;
 			bool isPk = _columns[column].IsPk;
@@ -85,6 +85,7 @@ namespace monolith_dbms.Models
 			{
 				var columnValue = _columns[column].Type.Instance(null, false);
 				if (!columnValue.ParseString(value)) return false;
+				if (onlyCheck) return true;
 				isValid = _tableController.UpdatePrimaryKey(this, row, column, columnValue.ObjectValue);
 				if (isValid) _rows[row][column].ParseString(value);
 			}
@@ -92,6 +93,7 @@ namespace monolith_dbms.Models
 			{
 				isValid = _rows[row][column].ParseString(value);
 				if (!isValid) return false;
+				if (onlyCheck) return true;
 				isValid = _tableController.UpdateCell(this, row, column);
 				if (!isValid) _rows[row][column].SetFromObject(originalValue);
 			}
@@ -115,7 +117,7 @@ namespace monolith_dbms.Models
 			var pkValueObject = _columns[pkIndex].Type.Instance(pkValue, false);
 
 			_tableController.DeleteRow(this, pkValueObject.ObjectValue!);
-			_rows.RemoveAll(r => r[pkIndex].ObjectValue == pkValueObject);
+			_rows.RemoveAll(r => r[pkIndex].ObjectValue?.Equals(pkValueObject.ObjectValue) ?? false);
 		}
 
 		public int GetPkColumnIndex()

@@ -56,7 +56,7 @@
                     <td>@item.StringValue</td>
                 }
                 <td>
-                    <a class="btn btn-outline-primary" href="@Url.Action()">Edit</a>
+                    <a href="@Url.Action("EditRow", new { id = Model.Id, tableName = table.Name, pk = GetPkValue(row) })" class="btn btn-outline-primary">Edit</a>
                     <button 
                         type="button" 
                         class="btn btn-danger" 

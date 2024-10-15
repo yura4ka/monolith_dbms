@@ -1,0 +1,25 @@
+﻿@model EditRowModel
+
+@{
+	ViewData["Title"] = "Edit a row";
+}
+
+@section Scripts
+{
+		<partial name="_ValidationScriptsPartial" />
+}
+
+<h3 class="mb-3">Create a new row</h3>
+<form class="col-md-4" asp-action="EditRow" method="post">
+	@foreach (var value in Model.Values)
+	{
+			<div class="mb-3">
+				@Html.HiddenFor(m => m.ColumnNames[value.Key])
+				@Html.LabelFor(m => m.Values[value.Key], Model.ColumnNames[value.Key], new { @class = "form-label" })
+				@Html.TextBoxFor(m => m.Values[value.Key], new { @class = "form-control" })
+				@Html.ValidationMessageFor(m => m.Values[value.Key])
+			</div>		
+	}
+	@Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+	<button type="submit" class="btn btn-primary">Edit</button>
+</form>
