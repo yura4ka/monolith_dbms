@@ -25,13 +25,50 @@
                             <input type="hidden" name="fullPath" value="@Model[i].FullPath" />
                             <button type="submit" class="btn btn-primary">Connect</button>
                         </form>
-                        <form asp-action="Delete" method="post" style="display:inline;">
-                            <input type="hidden" name="fileName" value="@Model[i].FullPath" />
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                        <button 
+                            type="button" 
+                            class="btn btn-danger" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#deleteDatabaseModal"
+                            data-full-path="@Model[i].FullPath"
+                            onclick="setDeletePath(this)"
+                        >
+                            Delete
+                        </button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="deleteDatabaseModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Delete database modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Warning!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete the database. This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form asp-action="Delete" method="delete" style="display:inline;">
+            <input type="hidden" id="deleteDatabaseFullPath" name="fullPath" value="" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts
+{
+     <script>
+        function setDeletePath(button) {
+            const fullPath = button.getAttribute('data-full-path');
+            document.getElementById('deleteDatabaseFullPath').value = fullPath;
+        }
+     </script>
+}
