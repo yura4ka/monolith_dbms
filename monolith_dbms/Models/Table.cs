@@ -1,4 +1,6 @@
-﻿namespace monolith_dbms.Models
+﻿using System.Text.RegularExpressions;
+
+namespace monolith_dbms.Models
 {
 	public class Table
 	{
@@ -49,10 +51,29 @@
 			return (true, "");
 		}
 
-		public void GetAllRows()
+		public void GetAllRows(string? search)
 		{
-			_rows = _tableController.GetAllRows(this);
-		}
+			var rows = _tableController.GetAllRows(this);
+			if (string.IsNullOrEmpty(search))
+			{
+				_rows = rows;
+				return;
+			}
+
+            Func<string, bool> searchFunc;
+            try
+            {
+                var regex = new Regex(search);
+                searchFunc = (value) => regex.IsMatch(value);
+            }
+            catch
+            {
+                string searchValue = search.ToLower();
+                searchFunc = (value) => value.Trim().ToLower().Contains(searchValue);
+            }
+
+			_rows = rows.Where(r => r.Any(value => searchFunc(value.StringValue))).ToList();
+        }
 
 		public bool ChangeCell(int row, int column, string value)
 		{

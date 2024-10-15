@@ -32,8 +32,10 @@
         Drop Table
     </button>
     <div class="vr"></div>
-    <input type="search" class="form-control me-auto" placeholder="Search...">
-    <button type="submit" class="btn btn-outline-secondary flex-shrink-0">Search</button>
+    <form class="me-auto d-flex flex-grow-1 gap-3" method="get" action="@Url.Action("Table", new { id = Model.Id, tableName = table.Name })">
+        <input type="search" name="search" class="form-control" placeholder="Search..." value="@Model.SearchString">
+        <button type="submit" class="btn btn-outline-secondary flex-shrink-0">Search</button>
+    </form>
 </div>
 <table class="table table-hover table-bordered">
   <thead>
