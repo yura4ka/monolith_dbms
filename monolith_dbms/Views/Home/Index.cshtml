@@ -1,26 +1,26 @@
 ﻿@model List<DbFileModel>
 
 <div class="text-center">
-<table class="table">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Name</th>
-            <th scope="col">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
+    <a href="@Url.Action("Create", "Home")" class="btn btn-primary" type="button">Create new database</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
             @for (int i = 0; i < Model.Count; i++)
             {
                 <tr>
-                    <th scope="row">1</th>
+                    <th scope="row">@(i + 1)</th>
                     <td>@Model[i].Name</td>
                     <td>
                         <form asp-action="Connect" method="post" style="display:inline;">
                             <input type="hidden" name="fullPath" value="@Model[i].FullPath" />
                             <button type="submit" class="btn btn-primary">Connect</button>
                         </form>
-
                         <form asp-action="Delete" method="post" style="display:inline;">
                             <input type="hidden" name="fileName" value="@Model[i].FullPath" />
                             <button type="submit" class="btn btn-danger">Delete</button>
@@ -28,6 +28,6 @@
                     </td>
                 </tr>
             }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 </div>

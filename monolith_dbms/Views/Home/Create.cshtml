@@ -1,0 +1,23 @@
+﻿@model NewDbModel
+
+@{
+	ViewData["Title"] = "Create database";
+}
+
+@section Scripts
+{
+	<partial name="_ValidationScriptsPartial" />
+}
+
+<h3>Create a database</h3>
+<form class="col-md-4" asp-action="Create" method="post">
+	<div class="mb-3">
+		<label asp-for="Name" class="form-label">Name</label>
+		<input asp-for="Name" type="text" class="form-control" />
+		<div class="custom-invalid-feedback">
+			<span asp-validation-for="Name" />
+			<div asp-validation-summary="All"></div>
+		</div>
+	</div>
+	<button type="submit" class="btn btn-primary">Create</button>
+</form>

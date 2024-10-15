@@ -1,5 +1,12 @@
 ﻿@model DatabaseViewModel
 
+@if (Model.Tables.Count == 0)
+{
+	<div class="d-flex justify-content-start align-items-center">
+		<h3>Nothing here</h3>
+	</div>
+	return;
+}
 
 <nav class="h-100 flex-column align-items-stretch pe-4 border-end">
 	@foreach (var table in Model.Tables)

@@ -20,3 +20,26 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.custom-invalid-feedback {
+    width: 100%;
+    margin-top: .25rem;
+    font-size: .875em;
+    color: var(--bs-danger);
+}
+
+.field-validation-error {
+    color: var(--bs-danger);
+}
+
+input.input-validation-error {
+    border-color: var(--bs-danger);
+}
+
+input.valid {
+    border-color: var(--bs-success);
+}
+
+.validation-summary-errors {
+    color: var(--bs-danger);
+}
