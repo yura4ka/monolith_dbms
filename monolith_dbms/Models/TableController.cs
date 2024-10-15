@@ -8,7 +8,7 @@ namespace monolith_dbms.Models
 		public bool UpdateCell(Table table, int row, int column);
 		public bool UpdatePrimaryKey(Table table, int row, int column, object? newPk);
 		public bool InsertRow(Table table, Row row);
-		public void DeleteRow(Table table, int row);
+		public void DeleteRow(Table table, object pkValue);
 	}
 
 	public class SqliteTableController : ITableController
@@ -74,13 +74,14 @@ namespace monolith_dbms.Models
 			return command.ExecuteNonQuery() == 1;
 		}
 
-		public void DeleteRow(Table table, int row)
+		public void DeleteRow(Table table, object pkValue)
 		{
-			var pk = GetPk(table, row);
+			int pkIndex = table.GetPkColumnIndex();
+			string pkName = table.Columns[pkIndex].Name;
 
 			var command = _connection.CreateCommand();
-			command.CommandText = $"DELETE FROM {table.Name} WHERE {pk.Name} = $id;";
-			command.Parameters.AddWithValue("$id", pk.Value);
+			command.CommandText = $"DELETE FROM {table.Name} WHERE {pkName} = $id;";
+			command.Parameters.AddWithValue("$id", pkValue);
 			command.ExecuteNonQuery();
 		}
 

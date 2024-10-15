@@ -30,7 +30,7 @@ namespace monolith_dbms.Controllers
             return RedirectToAction("Index", "Database", new { id });
         }
 
-        [HttpDelete]
+        [HttpPost]
         public IActionResult Delete(string fullPath)
         {
             if (System.IO.File.Exists(fullPath))

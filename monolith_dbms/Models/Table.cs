@@ -86,10 +86,20 @@
 			return isValid;
 		}
 
-		public void DeleteRow(int row)
+		public void DeleteRow(object pkValue)
 		{
-			_tableController.DeleteRow(this, row);
-			_rows.RemoveAt(row);
+			int pkIndex = GetPkColumnIndex();
+			if (pkIndex == -1) return;
+
+			var pkValueObject = _columns[pkIndex].Type.Instance(pkValue, false);
+
+			_tableController.DeleteRow(this, pkValueObject.ObjectValue!);
+			_rows.RemoveAll(r => r[pkIndex].ObjectValue == pkValueObject);
+		}
+
+		public int GetPkColumnIndex()
+		{
+			return _columns.FindIndex(c => c.IsPk);
 		}
 	}
 }

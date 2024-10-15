@@ -13,11 +13,24 @@
         if (column.IsNotNull) result += " (nn)";
         return result;
     }
+
+    public string? GetPkValue(Row row)
+    {
+        return row[Model.SelectedTable!.GetPkColumnIndex()].ObjectValue?.ToString();
+    }
 }
 
 <div class="hstack gap-3 mb-3">
     <button class="btn btn-success flex-shrink-0">Add Row</button>
-    <button class="btn btn-danger flex-shrink-0">Drop Table</button>
+    <button 
+        type="button" 
+        class="btn btn-danger" 
+        data-bs-toggle="modal" 
+        data-bs-target="#dropTableModal"
+        onclick="setDeletePath(this)"
+    >
+        Drop Table
+    </button>
     <div class="vr"></div>
     <input type="search" class="form-control me-auto" placeholder="Search...">
     <button type="submit" class="btn btn-outline-secondary flex-shrink-0">Search</button>
@@ -40,8 +53,73 @@
                 {
                     <td>@item.StringValue</td>
                 }
-                <td><button type="button" class="btn btn-outline-danger">Delete</button></td>
+                <td>
+                    <a class="btn btn-outline-primary" href="@Url.Action()">Edit</a>
+                    <button 
+                        type="button" 
+                        class="btn btn-danger" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#deleteRowModal"
+                        data-pk-value="@GetPkValue(row)"
+                        onclick="setDeleteRow(this)"
+                    >
+                        Delete
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
+
+<div class="modal fade" id="dropTableModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Drop table modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Warning!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to drop "@table.Name". This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form asp-action="DropTable" method="post" style="display:inline;">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="hidden" name="tableName" value="@table.Name" />
+            <button type="submit" class="btn btn-danger">Drop</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteRowModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="Delete row modal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Warning!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this row. This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form asp-action="DeleteRow" method="post" style="display:inline;">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="hidden" name="tableName" value="@table.Name" />
+            <input type="hidden" id="deleteRowValue" name="pkValue" value="" />
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+   function setDeleteRow(button) {
+       const value = button.getAttribute('data-pk-value');
+       document.getElementById('deleteRowValue').value = value;
+   }
+</script>

@@ -54,7 +54,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <form asp-action="Delete" method="delete" style="display:inline;">
+        <form asp-action="Delete" method="post" style="display:inline;">
             <input type="hidden" id="deleteDatabaseFullPath" name="fullPath" value="" />
             <button type="submit" class="btn btn-danger">Delete</button>
         </form>

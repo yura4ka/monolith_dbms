@@ -76,5 +76,34 @@ namespace monolith_dbms.Controllers
 
             return View("Index", model);
         }
+
+        [HttpPost]
+        [Route("Database/DropTable")]
+        public IActionResult DropTable(string id, string tableName)
+        {
+            var database = _connectionManager.GetConnectionById(id);
+            if (database == null) return NotFound();
+
+            var table = database.Tables.Find(t =>t.Name == tableName);
+            if (table == null) return NotFound();
+
+            database.DropTable(table);
+            return RedirectToAction("Index", new { id });
+        }
+
+        [HttpPost]
+        [Route("Database/DeleteRow")]
+        public IActionResult DeleteRow(string id, string tableName, string pkValue)
+        {
+            Console.WriteLine($"Delete row value: {pkValue} {pkValue.GetType().Name}");
+            var database = _connectionManager.GetConnectionById(id);
+            if (database == null) return NotFound();
+
+            var table = database.Tables.Find(t => t.Name == tableName);
+            if (table == null) return NotFound();
+
+            table.DeleteRow(pkValue);
+            return RedirectToAction("Table", new { id, tableName });
+        }
     }
 }
