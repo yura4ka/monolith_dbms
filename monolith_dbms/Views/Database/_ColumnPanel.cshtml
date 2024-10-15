@@ -1,3 +1,31 @@
 ﻿@model DatabaseViewModel
 
-<p>Column: @Model.SelectedColumn?.Name</p>
+@{
+	var column = Model.SelectedColumn;
+	if (column == null) return;
+}
+
+<table class="table table-borderless table-sm w-25">
+	<tbody>
+		<tr>
+			<td>Name:</td>
+			<td>@column.Name</td>
+		</tr>
+		<tr>
+			<td>Type:</td>
+			<td>@column.TypeName</td>
+		</tr>
+		<tr>
+			<td>Primary key (pk):</td>
+			<td>@column.IsPk</td>
+		</tr>
+		<tr>
+			<td>Not null (nn):</td>
+			<td>@column.IsNotNull</td>
+		</tr>
+		<tr>
+			<td>Default value:</td>
+			<td>@(column.DefaultValue ?? "")</td>
+		</tr>
+	</tbody>
+</table>
