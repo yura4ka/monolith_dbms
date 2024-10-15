@@ -1,3 +1,47 @@
 ﻿@model DatabaseViewModel
 
-<p>Table: @Model.SelectedTable?.Name</p>
+@{
+	var table = Model.SelectedTable;
+	if (table == null) return;
+}
+
+@functions {
+    public string GetColumnName(Column column)
+    {
+        string result = column.Name;
+        if (column.IsPk) result += " (pk)";
+        if (column.IsNotNull) result += " (nn)";
+        return result;
+    }
+}
+
+<div class="hstack gap-3 mb-3">
+    <button class="btn btn-success flex-shrink-0">Add Row</button>
+    <button class="btn btn-danger flex-shrink-0">Drop Table</button>
+    <div class="vr"></div>
+    <input type="search" class="form-control me-auto" placeholder="Search...">
+    <button type="submit" class="btn btn-outline-secondary flex-shrink-0">Search</button>
+</div>
+<table class="table table-hover table-bordered">
+  <thead>
+    <tr>
+        @foreach(var col in table.Columns)
+        {
+            <th scope="col">@GetColumnName(col)</th>
+        }
+        <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+        @foreach(var row in table.Rows)
+        {
+            <tr>
+                @foreach(var item in row)
+                {
+                    <td>@item.StringValue</td>
+                }
+                <td><button type="button" class="btn btn-outline-danger">Delete</button></td>
+            </tr>
+        }
+    </tbody>
+</table>

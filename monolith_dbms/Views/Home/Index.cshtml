@@ -1,5 +1,9 @@
 ﻿@model List<DbFileModel>
 
+@{
+    ViewData["Title"] = "DBMS";
+}
+
 <div class="text-center">
     <a href="@Url.Action("Create", "Home")" class="btn btn-primary" type="button">Create new database</a>
     <table class="table">

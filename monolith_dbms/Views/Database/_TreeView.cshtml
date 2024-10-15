@@ -8,22 +8,27 @@
 	return;
 }
 
+<div class="pe-4 border-end pb-3">
+    <button type="button" class="btn btn-outline-primary">Create Table</button>
+</div>
 <nav class="h-100 flex-column align-items-stretch pe-4 border-end">
-	@foreach (var table in Model.Tables)
-	{
-		<nav class="nav nav-pills flex-column">
-			<a class="@($"nav-link {(table == Model.SelectedTable ? "active" : "")}")" href="@Url.Action("Table", "Database", new { id = Model.Id, tableName = table.Name })">
-				@table.Name
-			</a>
-			<nav class="nav nav-pills flex-column">
-				@foreach (var column in table.Columns)
-				{
-						<a class="@($"nav-link ms-3 my-1 {(table == Model.SelectedTable && column == Model.SelectedColumn ? "active" : "")}")" 
-							href="@Url.Action("Column", "Database", new { id = Model.Id, tableName = table.Name, columnName = column.Name })">
-						@column.Name
-					</a>
-				}
-			</nav>			
-		</nav>		
-	}
+    @foreach (var table in Model.Tables)
+    {
+        <nav class="nav nav-pills flex-column">
+            <a class="@($"nav-link {(table == Model.SelectedTable ? "active" : "")}")" href="@Url.Action("Table", "Database", new { id = Model.Id, tableName = table.Name })">
+                @table.Name
+            </a>
+            <nav class="nav nav-pills flex-column">
+                @foreach (var column in table.Columns)
+                {
+                    <a 
+                        class="@($"nav-link ms-3 my-1 {(table == Model.SelectedTable && column == Model.SelectedColumn ? "active" : "")}")" 
+                        href="@Url.Action("Column", "Database", new { id = Model.Id, tableName = table.Name, columnName = column.Name })"
+                    >
+                        @column.Name
+                    </a>
+                }
+            </nav>
+        </nav>
+    }
 </nav>

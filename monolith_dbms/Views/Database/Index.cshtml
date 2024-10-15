@@ -1,5 +1,11 @@
 ﻿@model DatabaseViewModel
 
+@{
+    ViewData["Title"] = Model.Name;
+    if (Model.SelectedTable != null) ViewData["Title"] += $".{Model.SelectedTable.Name}";
+    ViewData["Title"] += " - DBMS";
+}
+
 <div class="row">
     <div class="col-md-2">
         @await Html.PartialAsync("_TreeView", Model)

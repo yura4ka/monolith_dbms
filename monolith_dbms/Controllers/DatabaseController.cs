@@ -24,6 +24,7 @@ namespace monolith_dbms.Controllers
             var model = new DatabaseViewModel
             {
                 Id = id,
+                Name = database.Name,
                 Tables = database.Tables,
             };
 
@@ -39,9 +40,12 @@ namespace monolith_dbms.Controllers
             var selectedTable = database.Tables.Find(t => t.Name == tableName);
             if (selectedTable == null) return NotFound();
 
+            selectedTable.GetAllRows();
+
             var model = new DatabaseViewModel
             {
                 Id = id,
+                Name = database.Name,
                 Tables = database.Tables,
                 SelectedTable = selectedTable,
             };
@@ -64,6 +68,7 @@ namespace monolith_dbms.Controllers
 			var model = new DatabaseViewModel
             {
                 Id = id,
+                Name = database.Name,
                 Tables = database.Tables,
                 SelectedTable = selectedTable,
                 SelectedColumn = selectedColumn,
