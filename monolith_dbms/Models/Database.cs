@@ -67,8 +67,6 @@ namespace monolith_dbms.Models
 		public bool CreateTable(Table table)
 		{
 			ValidateSqlIdentifier(table.Name);
-			if (_tables.Exists(t => t.Name == table.Name))
-				throw new DbmsException($"\"{table.Name}\": table with this name already exists!");
 
 			var (isValid, message) = table.ValidateColumns();
 			if (!isValid) throw new DbmsException(message);

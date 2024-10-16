@@ -1,0 +1,71 @@
+﻿@model EditTableModel
+
+@{
+	ViewData["Title"] = "Create a table";
+}
+
+<h3 class="mb-3">Create a new table</h3>
+<form id="createTableForm" class="col-md-4" method="post">
+	<div class="mb-3">
+		@Html.LabelFor(m => m.TableName, "Table Name", new { @class = "form-label" })
+		@Html.TextBoxFor(m => m.TableName, new { @class = "form-control form-control-lg" })
+		@Html.ValidationMessageFor(m => m.TableName)
+	</div>
+	@for (int i = 0; i < Model.Columns.Count; i++)
+	{
+		<div class="p-4 my-3 border rounded">
+			<div class="mb-3">
+				@Html.LabelFor(m => m.Columns[i].Name, "Column Name", new { @class = "form-label" })
+				@Html.TextBoxFor(m => m.Columns[i].Name, new { @class = "form-control" })
+				@Html.ValidationMessageFor(m => m.Columns[i].Name)
+			</div>
+			<div class="mb-3">
+				@Html.LabelFor(m => m.Columns[i].TypeName, "Type", new { @class = "form-label" })
+				@Html.DropDownListFor(m => m.Columns[i].TypeName, new SelectList(Model.AvailableTypes), new { @class = "form-select" })
+				@Html.ValidationMessageFor(m => m.Columns[i].TypeName)
+			</div>
+			<div class="mb-3">
+				@Html.LabelFor(m => m.Columns[i].DefaultValue, "Default Value", new { @class = "form-label" })
+				@Html.TextBoxFor(m => m.Columns[i].DefaultValue, new { @class = "form-control" })
+				@Html.ValidationMessageFor(m => m.Columns[i].DefaultValue)
+			</div>
+			<div class="mb-3">
+				@Html.RadioButtonFor(m => m.PrimaryKey, i, new { @class = "form-check-input", id = $"PrimaryKey[{i}]" }) 
+				@Html.LabelFor(m => m.PrimaryKey, "Primary key", new { @class = "form-check-label", @for = $"PrimaryKey[{i}]" })
+				@Html.ValidationMessageFor(m => m.PrimaryKey)
+			</div>
+			<div class="form-check mb-3">
+				@Html.CheckBoxFor(m => m.Columns[i].IsNotNull, new { @class = "form-check-input" })
+				@Html.LabelFor(m => m.Columns[i].IsNotNull, "Not null", new { @class = "form-check-label" })
+				@Html.ValidationMessageFor(m => m.Columns[i].IsNotNull)
+			</div>
+			@Html.HiddenFor(m => m.Columns[i].IsDeleted)
+			<button type="button" class="btn btn-outline-danger" onclick="@($"deleteColumn(\"Columns_{i}__IsDeleted\")")">Remove</button>
+		</div>
+	}
+	<button id="addColumnBtn" type="submit" class="btn btn-outline-primary mb-3">Add column</button>
+	@Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+	<button id="createTableBtn" type="submit" class="btn btn-primary w-100 btn-lg">Create</button>
+</form>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+
+    <script>
+		document.getElementById('createTableBtn').onclick = function(e) {
+			const form = document.getElementById('createTableForm');
+			form.action = '@Url.Action("CreateTable", new { id = Model.Id })';
+        };
+
+		document.getElementById('addColumnBtn').onclick = function(e) {
+			const form = document.getElementById('createTableForm');
+			form.action = '@Url.Action("CreateTableAddColumn", new { id = Model.Id })';
+        };
+
+		function deleteColumn(id) {
+			const input = document.getElementById(id);
+			input.value = true;
+			input.parentElement.classList.add('d-none');
+		}
+    </script>
+}

@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using monolith_dbms.Models;
 using monolith_dbms.Models.ViewModels;
 using monolith_dbms.Services;
+using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace monolith_dbms.Controllers
 {
@@ -184,7 +187,6 @@ namespace monolith_dbms.Controllers
 		[Route("Database/{id}/EditRow/{tableName}/{pk}")]
 		public IActionResult EditRow(string id, string tableName, string pk, EditRowModel editRow)
 		{
-			Console.WriteLine("1");
 			var database = _connectionManager.GetConnectionById(id);
 			if (database == null) return NotFound();
 
@@ -212,7 +214,7 @@ namespace monolith_dbms.Controllers
 				{
 					bool isValid = selectedTable.ChangeCell(rowIndex, index, item.Value, onlyCheck);
 					if (!isValid)
-					{ 
+					{
 						ModelState.AddModelError($"Values[{item.Key}]", $"Wrong value!");
 						onlyCheck = true;
 					}
@@ -224,13 +226,138 @@ namespace monolith_dbms.Controllers
 
 			}
 
-            Console.WriteLine($"2 {ModelState.IsValid}");
-            if (!ModelState.IsValid) return View(editRow);
+			if (!ModelState.IsValid) return View(editRow);
 			return RedirectToAction("Table", new { id, tableName });
 		}
 
+		[HttpGet]
+		[Route("Database/{id}/CreateTable")]
+		[OutputCache(NoStore = true, Duration = 0)]
+		public IActionResult CreateTable(string id)
+		{
+			var database = _connectionManager.GetConnectionById(id);
+			if (database == null) return NotFound();
+
+			var data = new EditTableModel
+			{
+				Id = id,
+				TableName = "",
+				AvailableTypes = [.. TypeManager.AvailableTypes],
+				Columns = [new ColumnDefinitionModel { TypeName = TypeManager.AvailableTypes[0] }]
+			};
+
+			return View(data);
+		}
+
 		[HttpPost]
-		[Route("Database/DropTable")]
+		[Route("Database/{id}/CreateTable/AddColumn")]
+		public IActionResult CreateTableAddColumn(string id, EditTableModel editTable)
+		{
+			var database = _connectionManager.GetConnectionById(id);
+			if (database == null) return NotFound();
+
+			var pkColumn = editTable.Columns[editTable.PrimaryKey ?? 0];
+			editTable.Columns.RemoveAll(c => c.IsDeleted == true);
+
+			int newPkIndex = editTable.Columns.IndexOf(pkColumn);
+			editTable.PrimaryKey = newPkIndex == -1 ? 0 : newPkIndex;
+			editTable.Columns = [.. editTable.Columns];
+
+			editTable.Columns.Add(new ColumnDefinitionModel { TypeName = TypeManager.AvailableTypes[0] });
+			editTable.AvailableTypes = [.. TypeManager.AvailableTypes];
+			editTable.Id = id; ;
+
+			return View("CreateTable", editTable);
+		}
+
+		[HttpPost]
+		[Route("Database/{id}/CreateTable")]
+		public IActionResult CreateTable(string id, EditTableModel editTable)
+		{
+			var database = _connectionManager.GetConnectionById(id);
+			if (database == null) return NotFound();
+
+			var pkColumn = editTable.Columns[editTable.PrimaryKey ?? 0];
+			editTable.Columns.RemoveAll(c => c.IsDeleted == true);
+
+			int newPkIndex = editTable.Columns.IndexOf(pkColumn);
+			editTable.PrimaryKey = newPkIndex == -1 ? null : newPkIndex;
+			editTable.Columns = [.. editTable.Columns];
+
+			var table = new Table(database.TableController, editTable.TableName ?? "");
+			for (int i = 0; i < editTable.Columns.Count; i++)
+			{
+				var c = editTable.Columns[i];
+
+				if (string.IsNullOrWhiteSpace(c.TypeName))
+					ModelState.AddModelError($"Columns[{i}].TypeName", "Invalid value");
+				else if (!TypeManager.TypeMappings.ContainsKey(c.TypeName.ToUpper()))
+					ModelState.AddModelError($"Columns[{i}].TypeName", "Type doesn't exists");
+
+				if (!ModelState.IsValid) continue;
+
+				if (string.IsNullOrWhiteSpace(c.Name))
+					ModelState.AddModelError($"Columns[{i}].Name", "Invalid value");
+
+				var typeObject = TypeManager.TypeMappings[c.TypeName!.ToUpper()]();
+				var defaultValueObject = typeObject.Instance(null, false);
+				bool isValid = defaultValueObject.ParseString(c.DefaultValue ?? "");
+
+				if (!isValid && !string.IsNullOrEmpty(c.DefaultValue))
+					ModelState.AddModelError($"Columns[{i}].DefaultValue", "Invalid value for the selected type");
+
+				for (int j = 0; j < editTable.Columns.Count; j++)
+				{
+					if (i == j) continue;
+					if
+					(
+						!string.IsNullOrWhiteSpace(c.Name)
+						&& !string.IsNullOrWhiteSpace(editTable.Columns[j].Name)
+						&& c.Name == editTable.Columns[j].Name
+					)
+						ModelState.AddModelError($"Columns[{i}].Name", "Column name must be unique");
+				}
+
+				if (string.IsNullOrWhiteSpace(editTable.TableName))
+					ModelState.AddModelError("TableName", "Invalid value");
+
+				if (database.Tables.Exists(t => t.Name == editTable.TableName?.Trim()))
+					ModelState.AddModelError("TableName", "Table with this name already exists");
+
+				if (!ModelState.IsValid) continue;
+
+				var column = new Column(c.Name!.Trim(),
+							typeObject,
+							c.IsNotNull,
+							defaultValueObject.ObjectValue,
+							editTable.PrimaryKey == i);
+				table.AddColumn(column);
+			}
+
+			editTable.AvailableTypes = [.. TypeManager.AvailableTypes];
+			editTable.Id = id;
+			editTable.PrimaryKey ??= 0;
+
+			if (!ModelState.IsValid)
+				return View("CreateTable", editTable);
+
+			try
+			{
+				bool isValid = database.CreateTable(table);
+				if (!isValid) ModelState.AddModelError("", "Error!");
+			}
+			catch (Exception ex)
+			{
+				ModelState.AddModelError("", ex.Message);
+			}
+
+			if (!ModelState.IsValid)
+				return View("CreateTable", editTable);
+			return RedirectToAction("Table", new { id, tableName = table.Name });
+		}
+
+		[HttpPost]
+		[Route("Database/{id}/DropTable")]
 		public IActionResult DropTable(string id, string tableName)
 		{
 			var database = _connectionManager.GetConnectionById(id);
@@ -244,7 +371,7 @@ namespace monolith_dbms.Controllers
 		}
 
 		[HttpPost]
-		[Route("Database/DeleteRow")]
+		[Route("Database/{id}/DeleteRow")]
 		public IActionResult DeleteRow(string id, string tableName, string pkValue)
 		{
 			var database = _connectionManager.GetConnectionById(id);

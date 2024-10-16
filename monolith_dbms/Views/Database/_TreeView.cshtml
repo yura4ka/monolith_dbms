@@ -9,7 +9,7 @@
 }
 
 <div class="pe-4 border-end pb-3">
-    <button type="button" class="btn btn-outline-primary">Create Table</button>
+    <a href="@Url.Action("CreateTable", new { id = Model.Id })" class="btn btn-outline-primary">Create Table</a>
 </div>
 <nav class="h-100 flex-column align-items-stretch pe-4 border-end">
     @foreach (var table in Model.Tables)
